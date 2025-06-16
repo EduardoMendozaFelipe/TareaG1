@@ -4,7 +4,7 @@
 
 ## ✨Resultado 
 
-![Resultado](resultado.png)
+![Resultado](Resultado.png)
 
 ## 🛠️ Tecnologías
 
