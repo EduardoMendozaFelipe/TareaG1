@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuadrados Concéntricos - Ejercicio 1.3</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        
+        .container {
+            text-align: center;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        canvas {
+            border: 2px solid #333;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .controls {
+            margin-top: 20px;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 0 5px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f4f8;
+            border-radius: 5px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cuadrados Concéntricos - Ejercicio 1.3</h1>
+        <canvas id="canvas" width="600" height="400"></canvas>
+        
+        <div class="controls">
+            <button onclick="redraw()">Redibujar</button>
+            <button onclick="changeSize()">Cambiar Tamaño</button>
+        </div>
+        
+        <div class="info">
+            <h3>Sobre el ejercicio:</h3>
+            <p>Este programa dibuja 50 cuadrados concéntricos usando coordenadas lógicas (flotantes) 
+            que se convierten a coordenadas de dispositivo (enteros). Cada cuadrado es ligeramente 
+            más pequeño que el anterior y rotado un poco en sentido contrario a las agujas del reloj.</p>
+            <p><strong>Características técnicas:</strong></p>
+            <ul style="text-align: left; display: inline-block;">
+                <li>Coordenadas lógicas: eje Y apunta hacia arriba</li>
+                <li>Coordenadas de dispositivo: eje Y apunta hacia abajo</li>
+                <li>Conversión con redondeo para mayor precisión</li>
+                <li>Cálculos siempre en punto flotante</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        class CoordinateSystem {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.initGraphics();
+            }
+            
+            initGraphics() {
+                const rect = this.canvas.getBoundingClientRect();
+                this.maxX = this.canvas.width - 1;
+                this.maxY = this.canvas.height - 1;
+                this.minMaxXY = Math.min(this.maxX, this.maxY);
+                this.xCenter = this.maxX / 2;
+                this.yCenter = this.maxY / 2;
+            }
+            
+            // Conversión de coordenadas lógicas a coordenadas de dispositivo
+            iX(x) {
+                return Math.round(x);
+            }
+            
+            iY(y) {
+                return this.maxY - Math.round(y);
+            }
+            
+            // Conversión de coordenadas de dispositivo a coordenadas lógicas
+            fx(x) {
+                return parseFloat(x.toString());
+            }
+            
+            fy(y) {
+                return parseFloat((this.maxY - y).toString());
+            }
+            
+            drawLine(x1, y1, x2, y2) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.iX(x1), this.iY(y1));
+                this.ctx.lineTo(this.iX(x2), this.iY(y2));
+                this.ctx.stroke();
+            }
+            
+            clear() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+            
+            drawSquares() {
+                this.clear();
+                
+                // Configuración del estilo de línea
+                this.ctx.strokeStyle = '#2196F3';
+                this.ctx.lineWidth = 1;
+                
+                // Tamaño inicial del cuadrado (95% del menor entre ancho y alto)
+                const side = 0.95 * this.minMaxXY;
+                const sideHalf = 0.5 * side;
+                
+                // Factor de reducción y rotación
+                const q = 0.05; // Factor de contracción
+                const p = 1 - q; // Factor de mantenimiento
+                
+                // Coordenadas iniciales del cuadrado (A, B, C, D en sentido horario)
+                let xA = this.xCenter - sideHalf; // Esquina inferior izquierda
+                let yA = this.yCenter - sideHalf;
+                let xB = this.xCenter + sideHalf; // Esquina inferior derecha
+                let yB = this.yCenter - sideHalf;
+                let xC = this.xCenter + sideHalf; // Esquina superior derecha
+                let yC = this.yCenter + sideHalf;
+                let xD = this.xCenter - sideHalf; // Esquina superior izquierda
+                let yD = this.yCenter + sideHalf;
+                
+                // Dibujar 50 cuadrados concéntricos
+                for (let i = 0; i < 50; i++) {
+                    // Cambiar el color gradualmente
+                    this.ctx.strokeStyle = '#000000';
+                    
+                    // Dibujar el cuadrado actual
+                    this.drawLine(xA, yA, xB, yB); // Lado inferior
+                    this.drawLine(xB, yB, xC, yC); // Lado derecho
+                    this.drawLine(xC, yC, xD, yD); // Lado superior
+                    this.drawLine(xD, yD, xA, yA); // Lado izquierdo
+                    
+                    // Calcular las nuevas coordenadas para el siguiente cuadrado
+                    // Cada punto se mueve hacia el punto siguiente en el sentido contrario a las agujas del reloj
+                    const xA1 = p * xA + q * xB; // A' se mueve hacia B
+                    const yA1 = p * yA + q * yB;
+                    const xB1 = p * xB + q * xC; // B' se mueve hacia C
+                    const yB1 = p * yB + q * yC;
+                    const xC1 = p * xC + q * xD; // C' se mueve hacia D
+                    const yC1 = p * yC + q * yD;
+                    const xD1 = p * xD + q * xA; // D' se mueve hacia A
+                    const yD1 = p * yD + q * yA;
+                    
+                    // Actualizar las coordenadas para la siguiente iteración
+                    xA = xA1; yA = yA1;
+                    xB = xB1; yB = yB1;
+                    xC = xC1; yC = yC1;
+                    xD = xD1; yD = yD1;
+                }
+            }
+        }
+        
+        let coordSystem;
+        
+        function initCanvas() {
+            const canvas = document.getElementById('canvas');
+            coordSystem = new CoordinateSystem(canvas);
+            coordSystem.drawSquares();
+        }
+        
+        function redraw() {
+            if (coordSystem) {
+                coordSystem.drawSquares();
+            }
+        }
+        
+        function changeSize() {
+            const canvas = document.getElementById('canvas');
+            const newWidth = Math.random() * 400 + 400; // Entre 400 y 800
+            const newHeight = Math.random() * 300 + 300; // Entre 300 y 600
+            
+            canvas.width = newWidth;
+            canvas.height = newHeight;
+            
+            coordSystem = new CoordinateSystem(canvas);
+            coordSystem.drawSquares();
+        }
+        
+        // Inicializar cuando se carga la página
+        window.addEventListener('load', initCanvas);
+        
+        // Redimensionar automáticamente si cambia el tamaño de la ventana
+        window.addEventListener('resize', () => {
+            setTimeout(() => {
+                if (coordSystem) {
+                    coordSystem.initGraphics();
+                    coordSystem.drawSquares();
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>
