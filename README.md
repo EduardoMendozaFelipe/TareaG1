@@ -1,6 +1,12 @@
-# TareaG1
-Tarea de Graficacion 1
+# Mi Tarea 1
 
-Resultado 
+🧊 Tarea cuadrado
 
-![Resultado del ejercicio](resultado.png) 
+## ✨Resultado 
+
+![Resultado](resultado.png)
+
+## 🛠️ Tecnologías
+
+  ⚙️ TypeScript
+  🎨 Canvas API
